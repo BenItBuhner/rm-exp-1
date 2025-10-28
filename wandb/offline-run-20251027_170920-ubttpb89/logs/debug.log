@@ -1,0 +1,24 @@
+2025-10-27 17:09:20,436 INFO    MainThread:22416 [wandb_setup.py:_flush():81] Current SDK version is 0.22.2
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_setup.py:_flush():81] Configure stats pid to 22416
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_setup.py:_flush():81] Loading settings from C:\Users\benpr\.config\wandb\settings
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_setup.py:_flush():81] Loading settings from C:\Users\benpr\OneDrive\Documents\Software Development\Training\Learning\Athena 1 Recursive Preparing\v1\wandb\settings
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_setup.py:_flush():81] Loading settings from environment variables
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_init.py:setup_run_log_directory():705] Logging user logs to C:\Users\benpr\OneDrive\Documents\Software Development\Training\Learning\Athena 1 Recursive Preparing\v1\wandb\offline-run-20251027_170920-ubttpb89\logs\debug.log
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_init.py:setup_run_log_directory():706] Logging internal logs to C:\Users\benpr\OneDrive\Documents\Software Development\Training\Learning\Athena 1 Recursive Preparing\v1\wandb\offline-run-20251027_170920-ubttpb89\logs\debug-internal.log
+2025-10-27 17:09:20,437 INFO    MainThread:22416 [wandb_init.py:init():832] calling init triggers
+2025-10-27 17:09:20,438 INFO    MainThread:22416 [wandb_init.py:init():837] wandb.init called with sweep_config: {}
+config: {'arch': {'name': 'recursive_reasoning.athena_trm@AthenaTRM', 'loss': {'name': 'losses@ACTLossHead', 'loss_type': 'stablemax_cross_entropy'}, 'hidden_size': 2304, 'num_heads': 36, 'expansion': 4.5, 'H_cycles': 3, 'L_cycles': 2, 'puzzle_emb_ndim': 1024, 'reasoning_seq_len': 96, 'reasoning_vocab_size': 32000, 'enable_reasoning_stream': True, 'post_refinement_steps': 4, 'halt_max_steps': 8, 'force_min_steps': 4, 'halt_exploration_prob': 0.08, 'forward_dtype': 'bfloat16'}, 'data_paths': ['data_examples\\smoke_small\\processed'], 'data_paths_test': [], 'evaluators': [{'name': 'text@PerplexityEvaluator'}], 'global_batch_size': 64, 'epochs': 200, 'lr': 0.0001, 'lr_min_ratio': 0.1, 'lr_warmup_steps': 10, 'weight_decay': 0.1, 'beta1': 0.9, 'beta2': 0.95, 'puzzle_emb_lr': 0.0002, 'puzzle_emb_weight_decay': 0.1, 'project_name': 'Athena-v1', 'run_name': 'smoke_test', 'load_checkpoint': None, 'checkpoint_path': 'checkpoints\\Athena-v1\\smoke_test', 'seed': 0, 'checkpoint_every_eval': True, 'eval_interval': 200, 'min_eval_interval': 100, 'eval_save_outputs': ['logits', 'reasoning_logits'], 'ema': False, 'ema_rate': 0.9995, 'freeze_weights': False, '_wandb': {}}
+2025-10-27 17:09:20,438 INFO    MainThread:22416 [wandb_init.py:init():880] starting backend
+2025-10-27 17:09:22,826 INFO    MainThread:22416 [wandb_init.py:init():883] sending inform_init request
+2025-10-27 17:09:23,115 INFO    MainThread:22416 [wandb_init.py:init():891] backend started and connected
+2025-10-27 17:09:23,116 INFO    MainThread:22416 [wandb_init.py:init():961] updated telemetry
+2025-10-27 17:09:23,120 INFO    MainThread:22416 [wandb_init.py:init():985] communicating run to backend with 90.0 second timeout
+2025-10-27 17:09:23,559 INFO    MainThread:22416 [wandb_init.py:init():1036] starting run threads in backend
+2025-10-27 17:09:24,149 INFO    MainThread:22416 [wandb_run.py:_console_start():2509] atexit reg
+2025-10-27 17:09:24,149 INFO    MainThread:22416 [wandb_run.py:_redirect():2357] redirect: wrap_raw
+2025-10-27 17:09:24,149 INFO    MainThread:22416 [wandb_run.py:_redirect():2426] Wrapping output streams.
+2025-10-27 17:09:24,150 INFO    MainThread:22416 [wandb_run.py:_redirect():2449] Redirects installed.
+2025-10-27 17:09:24,154 INFO    MainThread:22416 [wandb_init.py:init():1076] run started, returning control to user process
+2025-10-27 17:09:24,317 INFO    MainThread:22416 [wandb_run.py:_config_callback():1392] config_cb None None {'_wandb': {'code_path': 'source-Athena-v1-pretrain.py'}}
+2025-10-27 17:09:24,341 INFO    wandb-AsyncioManager-main:22416 [service_client.py:_forward_responses():80] Reached EOF.
+2025-10-27 17:09:24,341 INFO    wandb-AsyncioManager-main:22416 [mailbox.py:close():137] Closing mailbox, abandoning 0 handles.

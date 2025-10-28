@@ -1,0 +1,20 @@
+torch
+torchvision
+torchaudio
+einops
+tqdm
+coolname
+pydantic
+argdantic
+wandb
+omegaconf
+hydra-core
+huggingface_hub
+tokenizers
+numba
+triton
+sentencepiece
+datasets
+
+# Optional: TPU support
+# torch_xla @ https://storage.googleapis.com/libtpu-releases/index.html

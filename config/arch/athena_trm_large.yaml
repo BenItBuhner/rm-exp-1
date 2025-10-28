@@ -1,0 +1,23 @@
+name: recursive_reasoning.athena_trm@AthenaTRM
+loss:
+  name: losses@ACTLossHead
+  loss_type: stablemax_cross_entropy
+
+hidden_size: 2304
+num_heads: 36
+expansion: 4.5
+
+H_cycles: 7
+L_cycles: 5
+
+puzzle_emb_ndim: 1024
+reasoning_seq_len: 96
+reasoning_vocab_size: 32000
+enable_reasoning_stream: true
+post_refinement_steps: 4
+
+halt_max_steps: 48
+force_min_steps: 4
+halt_exploration_prob: 0.08
+
+forward_dtype: bfloat16

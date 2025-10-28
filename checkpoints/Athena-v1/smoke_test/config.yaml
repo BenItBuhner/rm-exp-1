@@ -1,0 +1,50 @@
+arch:
+  H_cycles: 2
+  L_cycles: 2
+  enable_reasoning_stream: true
+  expansion: 2.0
+  force_min_steps: 4
+  forward_dtype: float32
+  halt_exploration_prob: 0.08
+  halt_max_steps: 6
+  hidden_size: 64
+  loss:
+    loss_type: stablemax_cross_entropy
+    name: losses@ACTLossHead
+  name: recursive_reasoning.athena_trm@AthenaTRM
+  num_heads: 2
+  post_refinement_steps: 4
+  puzzle_emb_ndim: 0
+  reasoning_seq_len: 32
+  reasoning_vocab_size: 32000
+beta1: 0.9
+beta2: 0.95
+checkpoint_every_eval: true
+checkpoint_path: checkpoints\Athena-v1\smoke_test
+data_paths:
+- data_examples\smoke_test\processed_13
+data_paths_test: []
+device_type: auto
+ema: false
+ema_rate: 0.9995
+epochs: 2
+eval_interval: 2
+eval_save_outputs:
+- logits
+- reasoning_logits
+evaluators:
+- name: text@PerplexityEvaluator
+freeze_weights: false
+global_batch_size: 4
+grad_clip_norm: 1.0
+load_checkpoint: null
+lr: 0.0005
+lr_min_ratio: 0.1
+lr_warmup_steps: 5
+min_eval_interval: 1
+project_name: Athena-v1
+puzzle_emb_lr: 0.0002
+puzzle_emb_weight_decay: 0.1
+run_name: smoke_test
+seed: 0
+weight_decay: 0.1

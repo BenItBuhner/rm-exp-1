@@ -1,0 +1,43 @@
+# Athena v1 default training config
+
+defaults:
+  - arch: athena_trm_large
+  - _self_
+
+hydra:
+  output_subdir: null
+
+data_paths: ["data/athena_base"]
+data_paths_test: []
+
+evaluators:
+  - name: text@PerplexityEvaluator
+
+global_batch_size: 768
+epochs: 100000
+eval_interval: 5000
+min_eval_interval: 1
+checkpoint_every_eval: true
+
+lr: 8e-5
+lr_min_ratio: 0.1
+lr_warmup_steps: 4000
+
+beta1: 0.9
+beta2: 0.95
+weight_decay: 0.1
+grad_clip_norm: 1.0
+puzzle_emb_weight_decay: 0.1
+
+puzzle_emb_lr: 2e-4
+
+seed: 0
+
+ema: true
+ema_rate: 0.9995
+freeze_weights: false
+
+# Device selection: "auto" (default), "cuda", "tpu", or "cpu"
+device_type: "auto"
+
+eval_save_outputs: ["logits", "reasoning_logits"]

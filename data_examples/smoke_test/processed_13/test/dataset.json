@@ -1,0 +1,17 @@
+{
+  "pad_id": 50257,
+  "eos_id": 50258,
+  "ignore_label_id": -100,
+  "blank_identifier_id": 0,
+  "vocab_size": 50259,
+  "seq_len": 256,
+  "num_sequence_identifiers": 3,
+  "total_groups": 2,
+  "mean_examples_per_group": 1.0,
+  "total_sequences": 2,
+  "sets": [
+    "all"
+  ],
+  "max_iterations": 48,
+  "min_iterations": 4
+}
