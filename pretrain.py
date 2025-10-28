@@ -613,9 +613,22 @@ def launch(cfg: DictConfig):
     _, backend_type = detect_device(temp_config.device_type)
     
     if backend_type == "tpu" and TPU_AVAILABLE:
-        # TPU multi-core training
-        print(f"[Athena] Launching TPU training on {xm.xrt_world_size()} cores")
-        xmp.spawn(run_with_config, args=(cfg,), nprocs=None)  # nprocs=None uses all available cores
+        # For TPU pods (multi-worker), each worker runs independently
+        # PyTorch XLA handles inter-worker communication automatically
+        # Only use xmp.spawn for single-worker multi-core training
+        world_size = xm.xrt_world_size()
+        
+        # Check if we're in a multi-worker pod setup
+        # In pod setups, each worker already has one process per core
+        # so we just run directly without spawning
+        if os.environ.get('TPU_WORKER_ID') is not None or world_size > 8:
+            # Multi-worker TPU pod - run directly on each core
+            print(f"[Athena] TPU pod training. World size: {world_size}")
+            run_with_config(cfg)
+        else:
+            # Single-worker TPU - spawn to all cores
+            print(f"[Athena] Launching TPU training on {world_size} cores")
+            xmp.spawn(run_with_config, args=(cfg,), nprocs=None)
     else:
         # Single-device or multi-GPU training
         run_with_config(cfg)
