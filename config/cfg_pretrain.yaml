@@ -40,4 +40,9 @@ freeze_weights: false
 # Device selection: "auto" (default), "cuda", "tpu", or "cpu"
 device_type: "auto"
 
+# Checkpoint and run configuration
+checkpoint_path: null  # Will be auto-generated if null
+run_name: null  # Will be auto-generated if null
+load_checkpoint: null
+
 eval_save_outputs: ["logits", "reasoning_logits"]

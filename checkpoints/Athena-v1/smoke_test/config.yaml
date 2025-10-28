@@ -22,13 +22,13 @@ beta2: 0.95
 checkpoint_every_eval: true
 checkpoint_path: checkpoints\Athena-v1\smoke_test
 data_paths:
-- data_examples\smoke_test\processed_13
+- data_examples\smoke_test\processed_14
 data_paths_test: []
 device_type: auto
 ema: false
 ema_rate: 0.9995
-epochs: 2
-eval_interval: 2
+epochs: 1
+eval_interval: 1
 eval_save_outputs:
 - logits
 - reasoning_logits

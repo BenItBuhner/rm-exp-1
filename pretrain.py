@@ -27,10 +27,9 @@ except ImportError:
 
 import tqdm
 import wandb
-import hydra
 import coolname
 import pydantic
-from omegaconf import DictConfig
+import argparse
 from torch.optim import AdamW
 
 from sequence_dataset import SequenceDataset, SequenceDatasetConfig, SequenceDatasetMetadata
@@ -460,10 +459,10 @@ def save_code_and_config(config: PretrainConfig):
     wandb.run.log_code(config.checkpoint_path)
 
 
-def load_config(hydra_cfg: DictConfig, rank: int, world_size: int) -> PretrainConfig:
+def load_config(config_dict: dict, rank: int, world_size: int) -> PretrainConfig:
     objects = [None]
     if rank == 0:
-        cfg = PretrainConfig(**hydra_cfg)
+        cfg = PretrainConfig(**config_dict)
         if cfg.project_name is None:
             cfg.project_name = "Athena-v1"
         if cfg.run_name is None:
@@ -476,7 +475,7 @@ def load_config(hydra_cfg: DictConfig, rank: int, world_size: int) -> PretrainCo
     return objects[0]
 
 
-def run_with_config(cfg: DictConfig, tpu_index: Optional[int] = None):
+def run_with_config(cfg: dict, tpu_index: Optional[int] = None):
     """
     Main training function supporting CUDA GPU and TPU.
     
@@ -605,33 +604,111 @@ def run_with_config(cfg: DictConfig, tpu_index: Optional[int] = None):
     wandb.finish()
 
 
-@hydra.main(config_path="config", config_name="cfg_pretrain", version_base=None)
-def launch(cfg: DictConfig):
+def load_config_from_yaml(config_path: str) -> dict:
+    """Load config from YAML file."""
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    # Handle defaults (load arch config)
+    if 'defaults' in config:
+        for default in config['defaults']:
+            if isinstance(default, dict) and 'arch' in default:
+                arch_name = default['arch']
+                arch_path = os.path.join(os.path.dirname(config_path), 'arch', f'{arch_name}.yaml')
+                with open(arch_path, 'r') as f:
+                    arch_config = yaml.safe_load(f)
+                config['arch'] = arch_config
+        del config['defaults']
+    
+    # Remove hydra section if present
+    if 'hydra' in config:
+        del config['hydra']
+    
+    return config
+
+
+def parse_args_and_load_config():
+    """Parse command line arguments and merge with config file."""
+    parser = argparse.ArgumentParser(description='Athena v2 Training')
+    parser.add_argument('--config', type=str, default='config/cfg_pretrain.yaml',
+                       help='Path to config file')
+    parser.add_argument('--device_type', type=str, default=None,
+                       help='Device type: auto, cuda, tpu, cpu')
+    parser.add_argument('--data_paths', type=str, nargs='+', default=None,
+                       help='Paths to training data')
+    parser.add_argument('--checkpoint_path', type=str, default=None,
+                       help='Path to save checkpoints')
+    parser.add_argument('--load_checkpoint', type=str, default=None,
+                       help='Path to checkpoint to resume from')
+    parser.add_argument('--run_name', type=str, default=None,
+                       help='Name for this training run')
+    parser.add_argument('--global_batch_size', type=int, default=None,
+                       help='Global batch size')
+    parser.add_argument('--lr', type=float, default=None,
+                       help='Learning rate')
+    parser.add_argument('--lr_warmup_steps', type=int, default=None,
+                       help='LR warmup steps')
+    parser.add_argument('--epochs', type=int, default=None,
+                       help='Number of epochs')
+    parser.add_argument('--eval_interval', type=int, default=None,
+                       help='Evaluation interval')
+    parser.add_argument('--grad_clip_norm', type=float, default=None,
+                       help='Gradient clipping norm')
+    
+    args = parser.parse_args()
+    
+    # Load base config from YAML
+    config = load_config_from_yaml(args.config)
+    
+    # Override with command line arguments
+    if args.device_type is not None:
+        config['device_type'] = args.device_type
+    if args.data_paths is not None:
+        config['data_paths'] = args.data_paths
+    if args.checkpoint_path is not None:
+        config['checkpoint_path'] = args.checkpoint_path
+    if args.load_checkpoint is not None:
+        config['load_checkpoint'] = args.load_checkpoint
+    if args.run_name is not None:
+        config['run_name'] = args.run_name
+    if args.global_batch_size is not None:
+        config['global_batch_size'] = args.global_batch_size
+    if args.lr is not None:
+        config['lr'] = args.lr
+    if args.lr_warmup_steps is not None:
+        config['lr_warmup_steps'] = args.lr_warmup_steps
+    if args.epochs is not None:
+        config['epochs'] = args.epochs
+    if args.eval_interval is not None:
+        config['eval_interval'] = args.eval_interval
+    if args.grad_clip_norm is not None:
+        config['grad_clip_norm'] = args.grad_clip_norm
+    
+    return config
+
+
+def launch():
     """Main entry point that handles TPU multi-core launch if needed."""
+    # Load config
+    config_dict = parse_args_and_load_config()
+    
     # Check if we should use TPU
-    temp_config = PretrainConfig(**cfg)
-    _, backend_type = detect_device(temp_config.device_type)
+    device_type = config_dict.get('device_type', 'auto')
+    _, backend_type = detect_device(device_type)
     
     if backend_type == "tpu" and TPU_AVAILABLE:
         # For TPU pods (multi-worker), each worker runs independently
         # PyTorch XLA handles inter-worker communication automatically
-        # Only use xmp.spawn for single-worker multi-core training
         world_size = xm.xrt_world_size()
         
         # Check if we're in a multi-worker pod setup
-        # In pod setups, each worker already has one process per core
+        # In pod setups, PJRT spawns processes automatically
         # so we just run directly without spawning
-        if os.environ.get('TPU_WORKER_ID') is not None or world_size > 8:
-            # Multi-worker TPU pod - run directly on each core
-            print(f"[Athena] TPU pod training. World size: {world_size}")
-            run_with_config(cfg)
-        else:
-            # Single-worker TPU - spawn to all cores
-            print(f"[Athena] Launching TPU training on {world_size} cores")
-            xmp.spawn(run_with_config, args=(cfg,), nprocs=None)
+        print(f"[Athena] TPU detected. World size: {world_size}")
+        run_with_config(config_dict)
     else:
         # Single-device or multi-GPU training
-        run_with_config(cfg)
+        run_with_config(config_dict)
 
 
 if __name__ == "__main__":

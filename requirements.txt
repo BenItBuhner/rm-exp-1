@@ -7,12 +7,10 @@ coolname
 pydantic
 argdantic
 wandb
-omegaconf
-hydra-core
+pyyaml
 huggingface_hub
 tokenizers
 numba
-triton
 sentencepiece
 datasets
 

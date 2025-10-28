@@ -1,0 +1,29 @@
+# Athena v2 - TPU Pod Training Command (NO HYDRA VERSION)
+#
+# This version uses argparse instead of Hydra, so syntax is different!
+#
+# Run this command from your local machine:
+
+gcloud compute tpus tpu-vm ssh TPU \
+  --zone=us-central2-b \
+  --worker=all \
+  --command="PJRT_DEVICE=TPU python3 ~/rm-exp-1/pretrain.py \
+    --device_type tpu \
+    --data_paths /mnt/disks/ssd/athena_data/lang_corpus \
+    --checkpoint_path /mnt/disks/ssd/checkpoints/athena_v4_32 \
+    --run_name athena_v4_32_local \
+    --global_batch_size 2048 \
+    --lr 0.00064 \
+    --lr_warmup_steps 8000 \
+    --epochs 3 \
+    2>&1 | tee ~/logs.txt"
+
+# Key differences from Hydra version:
+# - Use --flag value instead of flag=value
+# - Use --checkpoint_path instead of +checkpoint_path
+# - No more Hydra struct errors!
+# - Works without hydra-core installed!
+
+# Single-line version (copy-paste this):
+gcloud compute tpus tpu-vm ssh TPU --zone=us-central2-b --worker=all --command="PJRT_DEVICE=TPU python3 ~/rm-exp-1/pretrain.py --device_type tpu --data_paths /mnt/disks/ssd/athena_data/lang_corpus --checkpoint_path /mnt/disks/ssd/checkpoints/athena_v4_32 --run_name athena_v4_32_local --global_batch_size 2048 --lr 0.00064 --lr_warmup_steps 8000 --epochs 3 2>&1 | tee ~/logs.txt"
+
