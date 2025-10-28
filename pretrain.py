@@ -469,20 +469,37 @@ def save_code_and_config(config: PretrainConfig):
     wandb.run.log_code(config.checkpoint_path)
 
 
-def load_config(config_dict: dict, rank: int, world_size: int) -> PretrainConfig:
-    objects = [None]
-    if rank == 0:
+def load_config(config_dict: dict, rank: int, world_size: int, backend_type: str = "cuda") -> PretrainConfig:
+    # For TPU, each worker loads config independently (no broadcast needed)
+    # For GPU with torch.distributed, use broadcast
+    if backend_type == "tpu":
+        # TPU: each core loads its own config
         cfg = PretrainConfig(**config_dict)
         if cfg.project_name is None:
             cfg.project_name = "Athena-v1"
         if cfg.run_name is None:
+            # Use same run name across all cores (deterministic seed)
+            import random
+            random.seed(42)
             cfg.run_name = f"{cfg.arch.name.split('@')[-1]}-{coolname.generate_slug(2)}"
         if cfg.checkpoint_path is None:
             cfg.checkpoint_path = os.path.join("checkpoints", cfg.project_name, cfg.run_name)
-        objects[0] = cfg
-    if world_size > 1:
-        dist.broadcast_object_list(objects, src=0)
-    return objects[0]
+        return cfg
+    else:
+        # GPU: use broadcast for multi-GPU
+        objects = [None]
+        if rank == 0:
+            cfg = PretrainConfig(**config_dict)
+            if cfg.project_name is None:
+                cfg.project_name = "Athena-v1"
+            if cfg.run_name is None:
+                cfg.run_name = f"{cfg.arch.name.split('@')[-1]}-{coolname.generate_slug(2)}"
+            if cfg.checkpoint_path is None:
+                cfg.checkpoint_path = os.path.join("checkpoints", cfg.project_name, cfg.run_name)
+            objects[0] = cfg
+        if world_size > 1 and dist.is_initialized():
+            dist.broadcast_object_list(objects, src=0)
+        return objects[0]
 
 
 def run_with_config(cfg: dict, tpu_index: Optional[int] = None):
@@ -521,7 +538,7 @@ def run_with_config(cfg: dict, tpu_index: Optional[int] = None):
     else:
         print(f"[Athena] Using CPU (no GPU/TPU available)")
 
-    config = load_config(cfg, rank, world_size)
+    config = load_config(cfg, rank, world_size, backend_type)
     torch.random.manual_seed(config.seed + rank)
 
     train_loader, train_meta = create_dataloader(
