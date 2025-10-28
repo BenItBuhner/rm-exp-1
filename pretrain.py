@@ -130,7 +130,12 @@ def detect_device(device_type: str = "auto") -> tuple[Any, str]:
 def get_world_size(backend_type: str) -> int:
     """Get the number of devices based on backend."""
     if backend_type == "tpu":
-        return xm.xrt_world_size()
+        try:
+            # Use newer API if available
+            import torch_xla.runtime as xr
+            return xr.world_size()
+        except (ImportError, AttributeError):
+            return xm.xrt_world_size()
     elif backend_type == "cuda" and dist.is_initialized():
         return dist.get_world_size()
     return 1
@@ -139,7 +144,12 @@ def get_world_size(backend_type: str) -> int:
 def get_rank(backend_type: str) -> int:
     """Get the device rank based on backend."""
     if backend_type == "tpu":
-        return xm.get_ordinal()
+        try:
+            # Use newer API if available
+            import torch_xla.runtime as xr
+            return xr.global_ordinal()
+        except (ImportError, AttributeError):
+            return xm.get_ordinal()
     elif backend_type == "cuda" and dist.is_initialized():
         return dist.get_rank()
     return 0
